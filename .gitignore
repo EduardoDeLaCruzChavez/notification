@@ -12,4 +12,4 @@ _deps
 CMakeUserPresets.json
 **/.vscode
 **/.devcontainer
-
+**/build
