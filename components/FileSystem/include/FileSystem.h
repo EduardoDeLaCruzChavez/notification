@@ -11,5 +11,5 @@
 #include "esp_spiffs.h"
 
 int8_t i8InitFileSystem(void);
-
+int8_t i8FileExist(const char *pacFilename);
 #endif

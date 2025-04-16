@@ -2,9 +2,12 @@
 #include "freertos/task.h"
 #include "CommonFuntions.h"
 #include "FileSystem.h"
+#include "EspWifi.h"
 
 void app_main(void)
 {
+
+    static TYPE_WIFI tWiFi = {0};
     vInitNVSFlash();
     if (i8InitFileSystem())
     {
@@ -12,4 +15,6 @@ void app_main(void)
         esp_restart();
         return;
     }
+
+    vInitWiFi(&tWiFi);
 }
