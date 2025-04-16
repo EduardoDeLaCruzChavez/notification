@@ -70,3 +70,20 @@ int8_t i8InitFileSystem(void)
     }
     return 0;
 }
+
+int8_t i8FileExist(const char *pacFilename)
+{
+    struct stat tFile = {0};
+
+    if (pacFilename == NULL)
+    {
+        return -1;
+    }
+
+    if (stat(pacFilename, &tFile) == 0)
+    {
+        return 0;
+    }
+
+    return -1;
+}

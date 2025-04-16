@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "EspWifi.h"
 #include "EspWifiTypes.h"
+#include "FileSystem.h"
+#include "Directory.h"
 
 static const char *TAG_AP = "WiFi AP";
 static const char *TAG_STA = "WiFi Sta";
@@ -38,8 +40,14 @@ static void vInitWiFiAP(void)
 
 static void vInitWiFiSta(TYPE_WIFI *ptWiFi)
 {
-    ESP_LOGI(TAG_STA, "ESP_WIFI_MODE_STA");
-    esp_netif_create_default_wifi_sta();
+    char acSSID[32] = {0};
+    char acPSSD[64] = {0};
+    char acHostName[16] = {0};
+    char acBuffer[64] = {0};
+    esp_netif_t *tNetfit = NULL;
+    FILE *pFile = NULL;
+    int8_t i8Index = 0;
+
     wifi_config_t tConfigSta = {
         .sta = {
             .scan_method = WIFI_ALL_CHANNEL_SCAN,
@@ -48,17 +56,52 @@ static void vInitWiFiSta(TYPE_WIFI *ptWiFi)
         },
     };
 
-    if (ptWiFi != NULL)
+    ESP_LOGI(TAG_STA, "ESP_WIFI_MODE_STA");
+    tNetfit = esp_netif_create_default_wifi_sta();
+    pFile = fopen(WIFI_CONFIG_FILE, "r");
+
+    if (pFile != NULL)
     {
-        // snprintf((char *)tConfigSta.sta.ssid, sizeof(tConfigSta.sta.ssid), "%s", ptWiFi->acSSID);
-        // snprintf((char *)tConfigSta.sta.password, sizeof(tConfigSta.sta.password), "%s", ptWiFi->acPSSD);
-        snprintf((char *)tConfigSta.sta.ssid, sizeof(tConfigSta.sta.ssid), "SIUUUCR7CHINO");
-        snprintf((char *)tConfigSta.sta.password, sizeof(tConfigSta.sta.password), "Myespwifi32");
+        while (fgets(acBuffer, sizeof(acBuffer), pFile) != NULL)
+        {
+            switch (i8Index)
+            {
+            case 0:
+            {
+                sscanf(acBuffer, "SSID: %s", acSSID);
+                break;
+            }
+            case 1:
+            {
+                sscanf(acBuffer, "PSSD: %s", acPSSD);
+                break;
+            }
+            case 2:
+            {
+                sscanf(acBuffer, "Name: %s", acHostName);
+
+                break;
+            }
+            default:
+                break;
+            }
+            bzero(acBuffer, sizeof(acBuffer));
+            i8Index++;
+        }
     }
 
+    snprintf((char *)tConfigSta.sta.ssid, sizeof(tConfigSta.sta.ssid), "%s", acSSID);
+    snprintf((char *)tConfigSta.sta.password, sizeof(tConfigSta.sta.password), "%s", acPSSD);
+
+    if (strlen(acHostName) == 0)
+    {
+        snprintf(acHostName, sizeof(acHostName), "%s", "ESP_NOTIFY");
+    }
+
+    esp_netif_set_hostname(tNetfit, acHostName);
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &tConfigSta));
-    ESP_LOGI(TAG_STA, "wifi_init_sta finished.");
+    ESP_LOGI(TAG_STA, "vInitWiFiSta finished.");
 
     return;
 }
@@ -100,10 +143,16 @@ void vInitWiFi(TYPE_WIFI *ptWiFi)
                                                         &WiFiEventHandler,
                                                         ptWiFi,
                                                         NULL));
+    //  check /root/config.dat
+    if (i8FileExist(WIFI_CONFIG_FILE))
+    {
+        vInitWiFiAP();
+    }
+    else
+    {
+        vInitWiFiSta(ptWiFi);
+    }
 
-    // vInitWiFiAP();
-    //  check /root/config
-    vInitWiFiSta(ptWiFi);
     ESP_ERROR_CHECK(esp_wifi_start());
 
     tBits = xEventGroupWaitBits(ptWiFi->tEventGroup,
