@@ -92,17 +92,12 @@ static void vInitWiFiSta(TYPE_WIFI *ptWiFi)
 
     snprintf((char *)tConfigSta.sta.ssid, sizeof(tConfigSta.sta.ssid), "%s", acSSID);
     snprintf((char *)tConfigSta.sta.password, sizeof(tConfigSta.sta.password), "%s", acPSSD);
-
-    if (strlen(acHostName) == 0)
-    {
-        snprintf(acHostName, sizeof(acHostName), "%s", "ESP_NOTIFY");
-    }
+    fclose(pFile);
 
     esp_netif_set_hostname(tNetfit, acHostName);
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &tConfigSta));
     ESP_LOGI(TAG_STA, "vInitWiFiSta finished.");
-
     return;
 }
 
