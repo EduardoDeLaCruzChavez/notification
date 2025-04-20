@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración Guardada</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .navbar {
+            background-color: #000;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #555;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-weight: bold;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-form {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .btn-restart {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-restart:hover {
+            background-color: #c82333;
+        }
+
+        .btn-modify {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .btn-modify:hover {
+            background-color: #0069d9;
+        }
+
+        @media (max-width: 576px) {
+            .buttons-container {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        ESP Notification
+    </div>
+
+    <div class="container">
+        <h2>Configuración Guardada</h2>
+        <div class="buttons-container">
+            <form action="/Final" method="post" class="btn-form">
+                <input type="hidden" name="action" value="restart">
+                <button type="submit" class="btn btn-restart">Reiniciar Dispositivo</button>
+            </form>
+
+            <form action="/Final" method="post" class="btn-form">
+                <input type="hidden" name="action" value="modify">
+                <button type="submit" class="btn btn-modify">Modificar Configuración</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

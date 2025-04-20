@@ -3,6 +3,7 @@
 #include "CommonFuntions.h"
 #include "FileSystem.h"
 #include "EspWifi.h"
+#include "HTTPServer.h"
 
 void app_main(void)
 {
@@ -17,4 +18,8 @@ void app_main(void)
     }
 
     vInitWiFi(&tWiFi);
+    if (tWiFi.tState == eWIFI_AP && i8StartServer())
+    {
+        return;
+    }
 }
