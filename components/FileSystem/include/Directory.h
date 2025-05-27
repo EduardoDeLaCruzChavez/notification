@@ -10,4 +10,6 @@
 #define ERROR_HTML_FILE ROOT_DIR BACKEND_DIR "/error.html"
 #define FINAL_HTML_FILE ROOT_DIR BACKEND_DIR "/final.html"
 #define RESTART_HTML_FILE ROOT_DIR BACKEND_DIR "/restart.html"
+
+#define CLIENT_LIST ROOT_DIR "/clientList.data"
 #endif
