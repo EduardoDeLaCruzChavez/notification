@@ -36,5 +36,5 @@ int8_t bReadMacClient(FILE *pFile, void *pvBuffer, int8_t s8Size);
 void vAppendMacClient(TYPE_CLIENTS *ptClients, char *pcClientMac);
 void vGetClientList(TYPE_CLIENTS *ptClients);
 void vUpdateClient(TYPE_CLIENTS *ptClients, TYPE_RESPONSE *ptResponse);
-
+void vConverRawByte(char *pcMac, char *pcRawMac);
 #endif

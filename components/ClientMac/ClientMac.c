@@ -49,10 +49,12 @@ void vSetOffClient(TYPE_CLIENTS *ptClients)
     ptNext = &ptClients->tClient;
     while (ptNext != NULL)
     {
-        ptNext->eClientState = eCLIENT_OFFLINE;
-        if (ptNext->s8TimeOff < MAX_TIME_OFF)
+
+        ptNext->s8TimeOff++;
+        if (ptNext->s8TimeOff >= MAX_TIME_OFF)
         {
-            ptNext->s8TimeOff++;
+            ptNext->eClientState = eCLIENT_OFFLINE;
+            ptNext->s8TimeOff = 5;
         }
         ptNext = ptNext->ptNextClient;
     }
@@ -207,4 +209,38 @@ void vUpdateClient(TYPE_CLIENTS *ptClients, TYPE_RESPONSE *ptResponse)
         ptNextRes = ptNextRes->ptNext;
     }
     return;
+}
+
+void vConverRawByte(char *pcMac, char *pcRawMac)
+{
+    int8_t s8Index = 0;
+    int8_t s8RawIndex = 0;
+    uint8_t cKey = 0;
+
+    if (pcMac == NULL || pcRawMac == NULL)
+    {
+        return;
+    }
+
+    for (; s8Index < 12; s8Index++)
+    {
+        cKey = pcMac[s8Index];
+
+        if (cKey >= 'A' && cKey <= 'F')
+        {
+            cKey -= 7;
+        }
+
+        cKey -= 48;
+
+        if (s8Index % 2 == 0)
+        {
+            pcRawMac[s8RawIndex] |= (cKey << 4);
+        }
+        else
+        {
+            pcRawMac[s8RawIndex] |= (cKey);
+            s8RawIndex++;
+        }
+    }
 }

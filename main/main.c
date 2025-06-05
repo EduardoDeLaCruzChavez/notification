@@ -8,11 +8,17 @@
 #include "SNMPResponse.h"
 #include "ClientMac.h"
 #include "Directory.h"
+#include "MySQL.h"
+
+char DATABASE[] = "mydb";
 
 void app_main(void)
 {
 
     static TYPE_WIFI tWiFi = {0};
+    TYPE_CLIENTS tClients = {0};
+    TYPE_RESPONSE tResponse = {0};
+
     vInitNVSFlash();
     if (i8InitFileSystem())
     {
@@ -26,9 +32,17 @@ void app_main(void)
     {
         return;
     }
-    TYPE_RESPONSE tResponse = {0};
-    TYPE_CLIENTS tClients = {0};
-    remove(CLIENT_LIST);
+
+    TYPE_DB_INFO tDBInfo = {
+        .acHost = "192.168.8.156",
+        .acUser = "writer",
+        .acPssd = "m7p1l1n0gr4nd3",
+        .u16Port = 3306,
+        .pcDB = DATABASE,
+    };
+    vReadClients(&tDBInfo, &tClients);
+
+    /*remove(CLIENT_LIST);
     vTaskDelay(3000 / portTICK_PERIOD_MS);
     if (i8FileExist(CLIENT_LIST))
     {
@@ -49,8 +63,8 @@ void app_main(void)
         vAppendMacClient(&tClients, Mac3);
     }
 
-    vGetClientList(&tClients);
-
+    vGetClientList(&tClients);*/
+    int8_t s8Current = 0;
     while (1)
     {
         i8SnmpGetNext("192.168.8.1", "public", "1.3.6.1.2.1.4.22.1.2", &tResponse);
@@ -58,6 +72,12 @@ void app_main(void)
 
         vUpdateClient(&tClients, &tResponse);
         vFreeResponse(&tResponse);
+        if (s8Current >= 5)
+        {
+            vUpdateStateClient(&tDBInfo, &tClients);
+            s8Current = 0;
+        }
+        s8Current++;
         vTaskDelay(60000 / portTICK_PERIOD_MS);
     }
 }
