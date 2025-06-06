@@ -213,7 +213,6 @@ int MySQL_Packet::wait_for_chars(const int &chars_need)
 {
   const TickType_t wait_till = xTaskGetTickCount() + pdMS_TO_TICKS(ESP32_MYSQL_DATA_TIMEOUT * 2);
   int num = 0;
-  TickType_t now = 0;
 
   do
   {
