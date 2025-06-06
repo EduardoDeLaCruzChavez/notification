@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "HTTPServer.h"
 #include "Directory.h"
+#include "FileSystem.h"
+#include <ctype.h>
 
 static const char *TAG = "HTTP Server";
 static httpd_handle_t tServer = NULL;
@@ -12,6 +14,51 @@ static esp_err_t tFinalPostHandler(httpd_req_t *ptReq);
 static esp_err_t tFinalGetHandler(httpd_req_t *ptReq);
 static esp_err_t tError404Handler(httpd_req_t *ptReq, httpd_err_code_t code);
 static esp_err_t tRedirectHandler(httpd_req_t *ptReq, char *pURL);
+
+int hex_to_dec(char c)
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+    if (c >= 'A' && c <= 'F')
+        return 10 + (c - 'A');
+    if (c >= 'a' && c <= 'f')
+        return 10 + (c - 'a');
+    return 0;
+}
+
+void url_decode(char *str)
+{
+    if (str == NULL)
+        return;
+
+    char *decoded = str;
+    char *encoded = str;
+
+    while (*encoded)
+    {
+        if (*encoded == '%')
+        {
+            // Verificar si hay suficientes caracteres después de '%'
+            if (encoded[1] && encoded[2])
+            {
+                char hex[3] = {encoded[1], encoded[2], '\0'};
+                *decoded = (char)strtol(hex, NULL, 16); // Convertir hex a char
+                encoded += 2;
+            }
+        }
+        else if (*encoded == '+')
+        {
+            *decoded = ' '; // Los '+' en URL encoding representan espacios
+        }
+        else
+        {
+            *decoded = *encoded;
+        }
+        decoded++;
+        encoded++;
+    }
+    *decoded = '\0'; // Terminar el string decodificado
+}
 
 static const httpd_uri_t tRootGet = {
     .uri = "/",
@@ -77,7 +124,7 @@ static esp_err_t tRestartGetHandler(httpd_req_t *ptReq)
     char acBuffer[256] = {0};
     FILE *pFile = NULL;
     pFile = fopen(RESTART_HTML_FILE, "r");
-
+    bool bConfig = true;
     if (pFile == NULL)
     {
         return ESP_FAIL;
@@ -90,6 +137,7 @@ static esp_err_t tRestartGetHandler(httpd_req_t *ptReq)
     httpd_resp_send_chunk(ptReq, NULL, 0);
     fclose(pFile);
 
+    vSetBlock(KEY_CFG, &bConfig, sizeof(bConfig));
     vTaskDelay(5000 / portTICK_PERIOD_MS);
     esp_restart();
     return ESP_OK;
@@ -103,8 +151,6 @@ static esp_err_t tConfigPostHandler(httpd_req_t *ptReq)
     int iReceived = 0;
     int iRemaining = ptReq->content_len;
     uint8_t u8Keys = 0;
-    FILE *pFileConfig = NULL;
-    FILE *pFileMode = NULL;
 
     if (iRemaining == 0)
     {
@@ -126,36 +172,29 @@ static esp_err_t tConfigPostHandler(httpd_req_t *ptReq)
     ESP_LOGI(TAG, "Found URL query => %s", acBuffer);
     if (httpd_query_key_value(acBuffer, "SSID", acSSID, sizeof(acSSID)) == ESP_OK)
     {
+        url_decode(acSSID);
         u8Keys |= (1 << 0);
     }
     if (httpd_query_key_value(acBuffer, "PSSD", acPSSD, sizeof(acPSSD)) == ESP_OK)
     {
+        url_decode(acPSSD);
         u8Keys |= (1 << 1);
     }
     if (httpd_query_key_value(acBuffer, "name", acHostName, sizeof(acHostName)) == ESP_OK)
     {
+        url_decode(acHostName);
         u8Keys |= (1 << 2);
     }
     if (httpd_query_key_value(acBuffer, "mode", acMode, sizeof(acMode)) == ESP_OK)
     {
+        url_decode(acMode);
         u8Keys |= (1 << 3);
     }
 
-    pFileConfig = fopen(WIFI_CONFIG_FILE, "w");
-    pFileMode = fopen(MODE_CONFIG_FILE, "w");
-
-    if (pFileConfig == NULL || pFileMode == NULL)
-    {
-        return ESP_FAIL;
-    }
-
-    fprintf(pFileConfig, "SSID: %s\n", acSSID);
-    fprintf(pFileConfig, "PSSD: %s\n", acPSSD);
-    fprintf(pFileConfig, "Name: %s\n", acHostName);
-    fprintf(pFileMode, "Mode: %s", acMode);
-
-    fclose(pFileConfig);
-    fclose(pFileMode);
+    vSetKey(KEY_SSID, acSSID);
+    vSetKey(KEY_PSSD, acPSSD);
+    vSetKey(KEY_NAME, acHostName);
+    vSetKey(KEY_MODE, acMode);
 
     httpd_register_uri_handler(tServer, &tFinalGet);
     tRedirectHandler(ptReq, "/Final");
