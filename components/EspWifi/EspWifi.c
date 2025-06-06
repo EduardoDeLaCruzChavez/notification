@@ -43,7 +43,6 @@ static void vInitWiFiSta(TYPE_WIFI *ptWiFi)
     char acSSID[32] = {0};
     char acPSSD[64] = {0};
     char acHostName[16] = {0};
-    char acBuffer[64] = {0};
     esp_netif_t *tNetfit = NULL;
     FILE *pFile = NULL;
     int8_t i8Index = 0;
@@ -58,37 +57,10 @@ static void vInitWiFiSta(TYPE_WIFI *ptWiFi)
 
     ESP_LOGI(TAG_STA, "ESP_WIFI_MODE_STA");
     tNetfit = esp_netif_create_default_wifi_sta();
-    pFile = fopen(WIFI_CONFIG_FILE, "r");
 
-    if (pFile != NULL)
-    {
-        while (fgets(acBuffer, sizeof(acBuffer), pFile) != NULL)
-        {
-            switch (i8Index)
-            {
-            case 0:
-            {
-                sscanf(acBuffer, "SSID: %s", acSSID);
-                break;
-            }
-            case 1:
-            {
-                sscanf(acBuffer, "PSSD: %s", acPSSD);
-                break;
-            }
-            case 2:
-            {
-                sscanf(acBuffer, "Name: %s", acHostName);
-
-                break;
-            }
-            default:
-                break;
-            }
-            bzero(acBuffer, sizeof(acBuffer));
-            i8Index++;
-        }
-    }
+    vGetKey(KEY_SSID, acSSID, sizeof(acSSID));
+    vGetKey(KEY_PSSD, acPSSD, sizeof(acPSSD));
+    vGetKey(KEY_NAME, acHostName, sizeof(acHostName));
 
     snprintf((char *)tConfigSta.sta.ssid, sizeof(tConfigSta.sta.ssid), "%s", acSSID);
     snprintf((char *)tConfigSta.sta.password, sizeof(tConfigSta.sta.password), "%s", acPSSD);
@@ -123,7 +95,7 @@ void vInitWiFi(TYPE_WIFI *ptWiFi)
     wifi_init_config_t tWifiCfg = WIFI_INIT_CONFIG_DEFAULT();
     wifi_config_t tApInfo = {0};
     EventBits_t tBits = 0;
-
+    bool bConfig = false;
     if (ptWiFi == NULL)
     {
         return;
@@ -143,8 +115,9 @@ void vInitWiFi(TYPE_WIFI *ptWiFi)
                                                         &WiFiEventHandler,
                                                         ptWiFi,
                                                         NULL));
-    //  check /root/config.dat
-    if (i8FileExist(WIFI_CONFIG_FILE))
+
+    vGetBlock(KEY_CFG, &bConfig, sizeof(bConfig));
+    if (bConfig == false)
     {
         vInitWiFiAP();
     }
