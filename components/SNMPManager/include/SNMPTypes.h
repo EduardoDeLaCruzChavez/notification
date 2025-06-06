@@ -7,6 +7,7 @@
 
 typedef enum TYPES_SNMP
 {
+    eTYPE_UNDEF = 0,
     eTYPE_INTEGER = 0x02,
     eTYPE_STRING = 0x04,
     eTYPE_NULL = 0x05,
@@ -75,7 +76,7 @@ typedef struct TYPE_SNMP_QUERY
 
 typedef struct TYPE_RESPONSE_STR
 {
-    char acBuffer[16];
+    char acBuffer[23];
     uint8_t u8Len;
 } TYPE_RESPONSE_STR;
 

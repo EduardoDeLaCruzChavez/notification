@@ -32,8 +32,9 @@ void vInsertClient(TYPE_CLIENTS *ptClients, char *pcClietMac)
     ptClients->s8Clients++;
     ptNewClient->ptNextClient = NULL;
     ptNewClient->s8TimeOff = 0;
-    ptNewClient->eClientState = eCLIENT_UNDEF;
-    memcpy(ptNewClient->acMAC, pcClietMac, sizeof(ptNewClient->acMAC));
+    ptNewClient->s8RSSI = 0;
+    ptNewClient->eClientState = eCLIENT_OFFLINE;
+    sniprintf(ptNewClient->acMAC, sizeof(ptNewClient->acMAC), "%s", pcClietMac);
     ptNext->ptNextClient = ptNewClient;
 }
 
@@ -49,12 +50,11 @@ void vSetOffClient(TYPE_CLIENTS *ptClients)
     ptNext = &ptClients->tClient;
     while (ptNext != NULL)
     {
-
+        ptNext->s8RSSI = 0;
         ptNext->s8TimeOff++;
-        if (ptNext->s8TimeOff >= MAX_TIME_OFF)
+        if (ptNext->eClientState != eCLIENT_OFFLINE && ptNext->s8TimeOff >= MAX_TIME_OFF)
         {
             ptNext->eClientState = eCLIENT_OFFLINE;
-            ptNext->s8TimeOff = 5;
         }
         ptNext = ptNext->ptNextClient;
     }
@@ -73,7 +73,7 @@ int8_t s8SearchClient(TYPE_CLIENTS *ptClients, char *pcClietMac)
     ptNext = &ptClients->tClient;
     while (ptNext != NULL)
     {
-        if (memcmp(ptNext->acMAC, pcClietMac, sizeof(ptNext->acMAC)) == 0)
+        if (strcmp(ptNext->acMAC, pcClietMac) == 0)
         {
             return s8Index;
         }
@@ -149,7 +149,7 @@ void vGetClientList(TYPE_CLIENTS *ptClients)
     fclose(pFile);
 }
 
-void vSetOnlineClient(TYPE_CLIENTS *ptClients, int8_t s8Pos)
+void vSetOnlineClient(TYPE_CLIENTS *ptClients, int8_t s8Pos, int8_t s8RSSI)
 {
     TYPE_CLIENT_MAC *ptNexMac = NULL;
     int8_t s8Index = 0;
@@ -176,13 +176,14 @@ void vSetOnlineClient(TYPE_CLIENTS *ptClients, int8_t s8Pos)
     }
 
     ptNexMac->eClientState = eCLIENT_ONLINE;
+    ptNexMac->s8RSSI = s8RSSI;
     if (ptNexMac->s8TimeOff >= MAX_TIME_OFF)
     {
         ESP_LOGI("Cliente", "Cliente reconectado");
         ptNexMac->eClientState = eCLIENT_RECONNECT;
         ptClients->s8Reconnect++;
     }
-    ESP_LOG_BUFFER_HEX("Cliente", ptNexMac->acMAC, sizeof(ptNexMac->acMAC));
+    ESP_LOGI("Cliente", "%s", ptNexMac->acMAC);
     ptNexMac->s8TimeOff = 0;
 }
 
@@ -190,6 +191,8 @@ void vUpdateClient(TYPE_CLIENTS *ptClients, TYPE_RESPONSE *ptResponse)
 {
     TYPE_RESPONSE *ptNextRes = NULL;
     int8_t s8Index = 0;
+    char acBuffMac[13];
+    int8_t s8RSSI = 0;
 
     if (ptClients == NULL || ptResponse == NULL)
     {
@@ -203,8 +206,11 @@ void vUpdateClient(TYPE_CLIENTS *ptClients, TYPE_RESPONSE *ptResponse)
 
         if (ptNextRes->eType == eTYPE_STRING)
         {
-            s8Index = s8SearchClient(ptClients, ptNextRes->ptResponse);
-            vSetOnlineClient(ptClients, s8Index);
+            s8RSSI = 0;
+            bzero(acBuffMac, sizeof(acBuffMac));
+            sscanf(ptNextRes->ptResponse, "%s %" SCNd8 "", acBuffMac, &s8RSSI);
+            s8Index = s8SearchClient(ptClients, acBuffMac);
+            vSetOnlineClient(ptClients, s8Index, s8RSSI);
         }
         ptNextRes = ptNextRes->ptNext;
     }

@@ -52,7 +52,7 @@ void vReadResponse(TYPE_RESPONSE *ptRespose)
             ptSTR = ptResNext->ptResponse;
             // printf("STR %p\n", ptSTR);
             // printf("RES %p\n", ptResNext);
-            ESP_LOG_BUFFER_HEX("MAC", ptSTR->acBuffer, ptSTR->u8Len);
+            ESP_LOGI("MAC", "%s", ptSTR->acBuffer);
             break;
         }
         default:
@@ -71,14 +71,19 @@ void vFreeResponse(TYPE_RESPONSE *ptRespose)
     {
         return;
     }
-    free(ptRespose->ptResponse);
 
     // printf("STR %p\n", ptRespose->ptResponse);
     // printf("RES %p\n", ptRespose);
     ptResNext = ptRespose->ptNext;
     ptRespose->ptNext = NULL;
 
-    while (ptResNext->ptNext != NULL)
+    if (ptRespose->ptResponse != NULL)
+    {
+
+        free(ptRespose->ptResponse);
+    }
+
+    while (ptResNext != NULL)
     {
         ptResAnt = ptResNext;
         ptResNext = ptResNext->ptNext;

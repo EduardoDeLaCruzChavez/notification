@@ -117,7 +117,6 @@ extern "C"
         ESP32_MySQL_Query query_mem = ESP32_MySQL_Query(&tSQLConnect);
 
         const char *pFORMAT_VIEW_MAC = "SELECT * FROM VIEM_MAC_CLIENT";
-        char acRawMac[6] = {0};
 
         if (tSQLConnect.connect(ptDBInfo->acHost, ptDBInfo->u16Port, ptDBInfo->acUser, ptDBInfo->acPssd, ptDBInfo->pcDB) == false)
         {
@@ -157,9 +156,7 @@ extern "C"
                     printf("%s ", row->values[f]);
                     if (strlen(row->values[f]) == 12)
                     {
-                        vConverRawByte(row->values[f], acRawMac);
-                        vInsertClient(ptClients, acRawMac);
-                        bzero(acRawMac, sizeof(acRawMac));
+                        vInsertClient(ptClients, row->values[f]);
                     }
                 }
 
@@ -174,9 +171,9 @@ extern "C"
         Client tClient = {};
         ESP32_MySQL_Connection tSQLConnect = ESP32_MySQL_Connection(&tClient);
         TYPE_CLIENT_MAC *ptNextClient = NULL;
-        const char *pcFormatClient = "UPDATE Device SET DStatus='%s' WHERE DName = '%02X%02X%02X%02X%02X%02X'";
-        const char *pcONLINE = "ON";
-        const char *pcOFFLINE = "OFF";
+        const char *pcFormatClient = "UPDATE Device SET DStatus='%s', DRssi = '%" PRId8 "' WHERE DName = '%s'";
+        const char *pcONLINE = "Conectado";
+        const char *pcOFFLINE = "Desconectado";
         const char *pcState = pcOFFLINE;
         char acBuff[128] = {0};
 
@@ -202,13 +199,8 @@ extern "C"
                     pcState = pcONLINE;
                 }
 
-                snprintf(acBuff, sizeof(acBuff), pcFormatClient, pcState,
-                         (unsigned char)ptNextClient->acMAC[0],
-                         (unsigned char)ptNextClient->acMAC[1],
-                         (unsigned char)ptNextClient->acMAC[2],
-                         (unsigned char)ptNextClient->acMAC[3],
-                         (unsigned char)ptNextClient->acMAC[4],
-                         (unsigned char)ptNextClient->acMAC[5]);
+                snprintf(acBuff, sizeof(acBuff), pcFormatClient, pcState, ptNextClient->s8RSSI,
+                         ptNextClient->acMAC);
                 printf("%s\n", acBuff);
                 query_mem.execute(acBuff);
                 ptNextClient = ptNextClient->ptNextClient;

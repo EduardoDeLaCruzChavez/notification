@@ -335,6 +335,7 @@ int8_t i8SnmpGetNext(char *pcIPHost, const char *pcType, const char *pcODI, TYPE
         return -1;
     }
 
+    ptResponse->eType = eTYPE_UNDEF;
     ptResponse->ptNext = NULL;
     ptResponse->ptResponse = NULL;
 

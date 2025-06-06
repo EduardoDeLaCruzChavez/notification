@@ -16,9 +16,10 @@ typedef enum
 
 typedef struct TYPE_CLIENT_MAC
 {
-    char acMAC[6];
+    char acMAC[13];
     ENUM_CLIENT_STATE eClientState;
     int8_t s8TimeOff;
+    int8_t s8RSSI;
     struct TYPE_CLIENT_MAC *ptNextClient;
 } TYPE_CLIENT_MAC;
 

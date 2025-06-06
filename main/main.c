@@ -40,44 +40,17 @@ void app_main(void)
         .u16Port = 3306,
         .pcDB = DATABASE,
     };
+
     vReadClients(&tDBInfo, &tClients);
 
-    /*remove(CLIENT_LIST);
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
-    if (i8FileExist(CLIENT_LIST))
-    {
-        char Mac1[] = {
-            0xC8,
-            0x58,
-        };
-        char Mac2[] = {
-            0x16,
-            0x84,
-        };
-        char Mac3[] = {
-            0xD4,
-            0x8A,
-        };
-        vAppendMacClient(&tClients, Mac1);
-        vAppendMacClient(&tClients, Mac2);
-        vAppendMacClient(&tClients, Mac3);
-    }
-
-    vGetClientList(&tClients);*/
-    int8_t s8Current = 0;
     while (1)
     {
-        i8SnmpGetNext("192.168.8.1", "public", "1.3.6.1.2.1.4.22.1.2", &tResponse);
+        i8SnmpGetNext("192.168.8.1", "public", "1.3.4.13.69.101", &tResponse);
         vReadResponse(&tResponse);
 
         vUpdateClient(&tClients, &tResponse);
         vFreeResponse(&tResponse);
-        if (s8Current >= 5)
-        {
-            vUpdateStateClient(&tDBInfo, &tClients);
-            s8Current = 0;
-        }
-        s8Current++;
+        vUpdateStateClient(&tDBInfo, &tClients);
         vTaskDelay(60000 / portTICK_PERIOD_MS);
     }
 }
