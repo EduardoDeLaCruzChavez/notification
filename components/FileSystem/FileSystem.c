@@ -2,7 +2,8 @@
 #include "FileSystem.h"
 #include "Directory.h"
 
-static const char *TAG = "File System";
+const char *TAG = "File System";
+const char *TAG_NVS = "NVS";
 
 int8_t i8InitFileSystem(void)
 {
@@ -86,4 +87,225 @@ int8_t i8FileExist(const char *pacFilename)
     }
 
     return -1;
+}
+
+void vClearKey(char *pcKey)
+{
+    nvs_handle_t tHandle;
+    esp_err_t tError = 0;
+
+    if (pcKey == NULL)
+    {
+        return;
+    }
+
+    tError = nvs_open("storages", NVS_READWRITE, &tHandle);
+
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Error (%s) opening NVS handle!", esp_err_to_name(tError));
+        return;
+    }
+
+    tError = nvs_erase_key(tHandle, pcKey);
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Failed to write string!");
+    }
+
+    ESP_LOGI(TAG_NVS, "Committing updates in NVS...");
+    tError = nvs_commit(tHandle);
+
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Failed to commit NVS changes!");
+    }
+
+    // Close
+    nvs_close(tHandle);
+    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+}
+
+void vSetKey(char *pckey, char *pcValue)
+{
+    nvs_handle_t tHandle;
+    esp_err_t tError = 0;
+
+    if (pckey == NULL || pcValue == NULL)
+    {
+        return;
+    }
+
+    tError = nvs_open("storages", NVS_READWRITE, &tHandle);
+
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Error (%s) opening NVS handle!", esp_err_to_name(tError));
+        return;
+    }
+
+    tError = nvs_set_str(tHandle, pckey, pcValue);
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Failed to write string!");
+    }
+
+    ESP_LOGI(TAG_NVS, "Committing updates in NVS...");
+    tError = nvs_commit(tHandle);
+
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Failed to commit NVS changes!");
+    }
+
+    // Close
+    nvs_close(tHandle);
+    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+}
+
+void vGetKey(char *pckey, char *pcValue, int iSize)
+{
+    nvs_handle_t tHandle;
+    esp_err_t tErro = 0;
+    size_t tRequiredSize = 0;
+
+    if (pckey == NULL || pcValue == NULL)
+    {
+        return;
+    }
+
+    tErro = nvs_open("storages", NVS_READWRITE, &tHandle);
+
+    if (tErro != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Error (%s) opening NVS handle!", esp_err_to_name(tErro));
+        return;
+    }
+
+    ESP_LOGI(TAG_NVS, "Reading string from NVS...");
+    tErro = nvs_get_str(tHandle, pckey, NULL, &tRequiredSize);
+
+    if (tErro == ESP_OK && tRequiredSize < iSize)
+    {
+        tErro = nvs_get_str(tHandle, pckey, pcValue, &tRequiredSize);
+        if (tErro == ESP_OK)
+        {
+            ESP_LOGI(TAG_NVS, "Read string: %s", pcValue);
+        }
+    }
+
+    // Close
+    nvs_close(tHandle);
+    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+}
+
+void vGetBlock(char *pckey, void *pvBuff, int iSize)
+{
+    nvs_handle_t tHandle;
+    esp_err_t tErro = 0;
+    size_t tRequiredSize = 0;
+
+    if (pckey == NULL || pvBuff == NULL)
+    {
+        return;
+    }
+
+    tErro = nvs_open("storages", NVS_READWRITE, &tHandle);
+
+    if (tErro != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Error (%s) opening NVS handle!", esp_err_to_name(tErro));
+        return;
+    }
+
+    ESP_LOGI(TAG_NVS, "Reading string from NVS...");
+    tErro = nvs_get_blob(tHandle, pckey, NULL, &tRequiredSize);
+
+    if (tErro == ESP_OK && tRequiredSize == iSize)
+    {
+        tErro = nvs_get_blob(tHandle, pckey, pvBuff, &tRequiredSize);
+    }
+
+    // Close
+    nvs_close(tHandle);
+    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+}
+
+void vSetBlock(char *pckey, void *pvBuff, int iSize)
+{
+    nvs_handle_t tHandle;
+    esp_err_t tError = 0;
+
+    if (pckey == NULL || pvBuff == NULL)
+    {
+        return;
+    }
+
+    tError = nvs_open("storages", NVS_READWRITE, &tHandle);
+
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Error (%s) opening NVS handle!", esp_err_to_name(tError));
+        return;
+    }
+
+    tError = nvs_set_blob(tHandle, pckey, pvBuff, iSize);
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Failed to write string!");
+    }
+
+    ESP_LOGI(TAG_NVS, "Committing updates in NVS...");
+    tError = nvs_commit(tHandle);
+
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Failed to commit NVS changes!");
+    }
+
+    // Close
+    nvs_close(tHandle);
+    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+}
+
+void vClearAllNVS()
+{
+    nvs_handle_t my_handle;
+    esp_err_t err = nvs_open("storages", NVS_READWRITE, &my_handle);
+    if (err == ESP_OK)
+    {
+
+        if (err == ESP_OK)
+        {
+            nvs_commit(my_handle); // Confirma los cambios
+        }
+        nvs_close(my_handle); // Cierra la sesión de NVS
+    }
+    nvs_handle_t tHandle;
+    esp_err_t tError = 0;
+
+    tError = nvs_open("storages", NVS_READWRITE, &tHandle);
+
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Error (%s) opening NVS handle!", esp_err_to_name(tError));
+        return;
+    }
+
+    err = nvs_erase_all(my_handle);
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Failed to clear nvs");
+    }
+
+    ESP_LOGI(TAG_NVS, "Committing updates in NVS...");
+    tError = nvs_commit(tHandle);
+
+    if (tError != ESP_OK)
+    {
+        ESP_LOGE(TAG_NVS, "Failed to commit NVS changes!");
+    }
+
+    nvs_close(tHandle);
+    ESP_LOGI(TAG_NVS, "NVS handle closed.");
 }
