@@ -27,4 +27,5 @@ typedef struct
 } TYPE_WIFI;
 
 void vInitWiFi(TYPE_WIFI *ptWiFi);
+void vGetApIp(char *pcIP);
 #endif

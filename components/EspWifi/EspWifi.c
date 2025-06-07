@@ -153,6 +153,26 @@ void vInitWiFi(TYPE_WIFI *ptWiFi)
     }
 }
 
+void vGetApIp(char *pcIP)
+{
+
+    esp_netif_t *tNetfit = NULL;
+    tNetfit = esp_netif_get_default_netif();
+
+    if (tNetfit == NULL)
+    {
+        return;
+    }
+
+    esp_netif_ip_info_t ip_info;
+    if (esp_netif_get_ip_info(tNetfit, &ip_info) != ESP_OK)
+    {
+        ESP_LOGE(TAG_STA, "Error al obtener la IP del gateway");
+        return;
+    }
+    snprintf(pcIP, 16, IPSTR, IP2STR(&ip_info.gw));
+}
+
 static void WiFiEventHandler(void *vpArg, esp_event_base_t tEventBase,
                              int32_t i32EventID, void *vpEventData)
 {

@@ -18,7 +18,7 @@ void app_main(void)
     static TYPE_WIFI tWiFi = {0};
     TYPE_CLIENTS tClients = {0};
     TYPE_RESPONSE tResponse = {0};
-
+    char acGWIP[16] = {0};
     vInitNVSFlash();
     if (i8InitFileSystem())
     {
@@ -42,10 +42,11 @@ void app_main(void)
     };
 
     vReadClients(&tDBInfo, &tClients);
+    vGetApIp(acGWIP);
 
     while (1)
     {
-        i8SnmpGetNext("192.168.8.1", "public", "1.3.4.13.69.101", &tResponse);
+        i8SnmpGetNext(acGWIP, "public", "1.3.4.13.69.101", &tResponse);
         vReadResponse(&tResponse);
 
         vUpdateClient(&tClients, &tResponse);
