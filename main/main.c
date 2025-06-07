@@ -34,7 +34,7 @@ void app_main(void)
     }
 
     TYPE_DB_INFO tDBInfo = {
-        .acHost = "192.168.8.156",
+        .acHost = "raspberrycz",
         .acUser = "writer",
         .acPssd = "m7p1l1n0gr4nd3",
         .u16Port = 3306,

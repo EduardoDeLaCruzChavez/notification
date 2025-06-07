@@ -4,7 +4,7 @@
 #include "FileSystem.h"
 #include <ctype.h>
 
-static const char *TAG = "HTTP Server";
+static const char *TAG_HTTP = "HTTP Server";
 static httpd_handle_t tServer = NULL;
 
 static esp_err_t tRootGetHandler(httpd_req_t *ptReq);
@@ -169,7 +169,7 @@ static esp_err_t tConfigPostHandler(httpd_req_t *ptReq)
     }
     acBuffer[ptReq->content_len] = 0;
 
-    ESP_LOGI(TAG, "Found URL query => %s", acBuffer);
+    ESP_LOGI(TAG_HTTP, "Found URL query => %s", acBuffer);
     if (httpd_query_key_value(acBuffer, "SSID", acSSID, sizeof(acSSID)) == ESP_OK)
     {
         url_decode(acSSID);
@@ -310,7 +310,7 @@ int8_t i8StartServer(void)
 {
     esp_err_t tRet = 0;
 
-    ESP_LOGI(TAG, "Starting http server");
+    ESP_LOGI(TAG_HTTP, "Starting http server");
 
     httpd_config_t conf = HTTPD_DEFAULT_CONFIG();
     conf.lru_purge_enable = true;
@@ -319,11 +319,11 @@ int8_t i8StartServer(void)
 
     if (ESP_OK != tRet)
     {
-        ESP_LOGI(TAG, "Error starting server!");
+        ESP_LOGI(TAG_HTTP, "Error starting server!");
         esp_restart();
     }
 
-    ESP_LOGI(TAG, "Registering URI handlers");
+    ESP_LOGI(TAG_HTTP, "Registering URI handlers");
     httpd_register_uri_handler(tServer, &tRootGet);
     httpd_register_uri_handler(tServer, &tConfigPost);
     httpd_register_uri_handler(tServer, &tConfigGet);

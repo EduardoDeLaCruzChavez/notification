@@ -1,6 +1,9 @@
 #pragma once
 
 #include <lwip/sockets.h>
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include <lwip/netdb.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
@@ -64,7 +67,26 @@ public:
         server_addr.sin_family = AF_INET;
         server_addr.sin_port = htons(pt);
 
-        inet_pton(AF_INET, host, &server_addr.sin_addr);
+        if (inet_pton(AF_INET, host, &server_addr.sin_addr) == 0)
+        {
+            struct addrinfo tInfo = {}, *tServer = NULL;
+            struct sockaddr_in *tSvAddr = NULL;
+            char acPort[8] = {0};
+            tInfo.ai_family = AF_INET;       // Solo IPv4
+            tInfo.ai_socktype = SOCK_STREAM; // TCP
+            itoa(pt, acPort, 10);
+
+            int err = getaddrinfo(host, acPort, &tInfo, &tServer);
+            if (err != 0 || tServer == NULL)
+            {
+                return -1;
+            }
+
+            tSvAddr = (struct sockaddr_in *)tServer->ai_addr; // tSvAddr->sin_addr
+            inet_pton(AF_INET, inet_ntoa(tSvAddr->sin_addr), &server_addr.sin_addr);
+            freeaddrinfo(tServer); // Liberar memoria
+        }
+
         // Crear socket
         sockfd = socket(AF_INET, SOCK_STREAM, 0);
         if (sockfd < 0)
