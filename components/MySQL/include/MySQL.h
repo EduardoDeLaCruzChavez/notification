@@ -24,6 +24,7 @@ extern "C"
     void vReadSelect(TYPE_DB_INFO *ptDBInfo, char *pcQuery);
     void vReadClients(TYPE_DB_INFO *ptDBInfo, TYPE_CLIENTS *ptClients);
     void vUpdateStateClient(TYPE_DB_INFO *ptDBInfo, TYPE_CLIENTS *ptClientList);
+    void vReadNotifyInfo(TYPE_DB_INFO *ptDBInfo, TYPE_BOT_INFO *ptBotInfo);
 #ifdef __cplusplus
 }
 #endif

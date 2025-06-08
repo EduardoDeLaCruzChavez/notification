@@ -117,7 +117,8 @@ extern "C"
         ESP32_MySQL_Query query_mem = ESP32_MySQL_Query(&tSQLConnect);
 
         const char *pFORMAT_VIEW_MAC = "SELECT * FROM VIEM_MAC_CLIENT";
-
+        char acMac[13];
+        char acNombre[16];
         if (tSQLConnect.connect(ptDBInfo->acHost, ptDBInfo->u16Port, ptDBInfo->acUser, ptDBInfo->acPssd, ptDBInfo->pcDB) == false)
         {
             return;
@@ -151,15 +152,22 @@ extern "C"
 
             if (row != NULL)
             {
+                bzero(acMac, sizeof(acMac));
+                bzero(acNombre, sizeof(acNombre));
+
                 for (int f = 0; f < cols->num_fields; f++)
                 {
                     printf("%s ", row->values[f]);
-                    if (strlen(row->values[f]) == 12)
+                    if (f == 0)
                     {
-                        vInsertClient(ptClients, row->values[f]);
+                        snprintf(acMac, sizeof(acMac), "%s", row->values[f]);
+                    }
+                    else if (f == 1)
+                    {
+                        snprintf(acNombre, sizeof(acNombre), "%s", row->values[f]);
                     }
                 }
-
+                vInsertClient(ptClients, acMac, acNombre);
                 printf("\n");
             }
         } while (row != NULL);
@@ -208,6 +216,55 @@ extern "C"
             }
             tSQLConnect.close(); // close the connection
         }
+    }
+
+    void vReadNotifyInfo(TYPE_DB_INFO *ptDBInfo, TYPE_BOT_INFO *ptBotInfo)
+    {
+        Client tClient = {};
+        ESP32_MySQL_Connection tSQLConnect = ESP32_MySQL_Connection(&tClient);
+        ESP32_MySQL_Query query_mem = ESP32_MySQL_Query(&tSQLConnect);
+
+        const char *pFORMAT_VIEW_CHAT_BOT = "SELECT * FROM `VIEW_CHAT_BOT`";
+
+        if (tSQLConnect.connect(ptDBInfo->acHost, ptDBInfo->u16Port, ptDBInfo->acUser, ptDBInfo->acPssd, ptDBInfo->pcDB) == false)
+        {
+            return;
+        }
+
+        if (!query_mem.execute(pFORMAT_VIEW_CHAT_BOT))
+        {
+            return;
+        }
+
+        // Show the result
+        // Fetch the columns and print them
+        column_names *cols = query_mem.get_columns();
+
+        for (int f = 0; f < cols->num_fields; f++)
+        {
+            printf("%s", cols->fields[f]->name);
+
+            if (f < cols->num_fields - 1)
+            {
+                printf(",");
+            }
+        }
+        printf("\n");
+        // Read the rows and print them
+        row_values *row = NULL;
+
+        row = query_mem.get_next_row();
+
+        if (row != NULL)
+        {
+            bzero(ptBotInfo->acKey, sizeof(ptBotInfo->acKey));
+            printf("%s, %s\n", row->values[0], row->values[1]);
+
+            snprintf(ptBotInfo->acKey, sizeof(ptBotInfo->acKey), "%s", row->values[0]);
+            sscanf(row->values[1], "%lld", &ptBotInfo->s64ChatID);
+            printf("%s, %lld\n", ptBotInfo->acKey, ptBotInfo->s64ChatID);
+        }
+        tSQLConnect.close(); // close the connection
     }
 
 #ifdef __cplusplus

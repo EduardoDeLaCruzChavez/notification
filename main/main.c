@@ -9,6 +9,7 @@
 #include "ClientMac.h"
 #include "Directory.h"
 #include "MySQL.h"
+#include "HTTPSGet.h"
 
 char DATABASE[] = "mydb";
 
@@ -18,6 +19,9 @@ void app_main(void)
     static TYPE_WIFI tWiFi = {0};
     TYPE_CLIENTS tClients = {0};
     TYPE_RESPONSE tResponse = {0};
+    TYPE_NOTIFY tNotify = {
+        .ptClients = &tClients,
+    };
     char acGWIP[16] = {0};
     vInitNVSFlash();
     if (i8InitFileSystem())
@@ -41,7 +45,9 @@ void app_main(void)
         .pcDB = DATABASE,
     };
 
+    vReadNotifyInfo(&tDBInfo, &tNotify.tBot);
     vReadClients(&tDBInfo, &tClients);
+    vInitHTTPClient(&tNotify);
     vGetApIp(acGWIP);
 
     while (1)
@@ -52,6 +58,10 @@ void app_main(void)
         vUpdateClient(&tClients, &tResponse);
         vFreeResponse(&tResponse);
         vUpdateStateClient(&tDBInfo, &tClients);
+        if (tClients.s8Reconnect > 0)
+        {
+            vTaskResume(tNotify.tHandle);
+        }
         vTaskDelay(60000 / portTICK_PERIOD_MS);
     }
 }
