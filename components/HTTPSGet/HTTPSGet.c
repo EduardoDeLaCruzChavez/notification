@@ -3,7 +3,8 @@
 #define MAX_HTTP_RECV_BUFFER 512
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 static const char *TAG = "HTTP_CLIENT";
-static const char *pcFormat = "https://api.telegram.org/bot%s/sendMessage?chat_id=%lld&text=Llego%c20%s";
+static const char *pcFormatOn = "https://api.telegram.org/bot%s/sendMessage?chat_id=%lld&text=Se%c20conecto%c20%s";
+static const char *pcFormatOff = "https://api.telegram.org/bot%s/sendMessage?chat_id=%lld&text=Se%c20desconecto%c20%s";
 
 extern const char howsmyssl_com_root_cert_pem_start[] asm("_binary_howsmyssl_com_root_cert_pem_start");
 extern const char howsmyssl_com_root_cert_pem_end[] asm("_binary_howsmyssl_com_root_cert_pem_end");
@@ -176,6 +177,7 @@ static void http_test_task(void *pvParameters)
         vTaskDelete(NULL);
     }
 
+    bzero(acBuffer, sizeof(acBuffer));
     ptNotify = (TYPE_NOTIFY *)pvParameters;
     ptBotInfo = &ptNotify->tBot;
     ptClients = ptNotify->ptClients;
@@ -185,19 +187,37 @@ static void http_test_task(void *pvParameters)
         vTaskSuspend(NULL);
 
         tClient = esp_http_client_init(&tConfig);
-        ptNextMac = &ptClients->tClient;
-        while (ptNextMac != NULL && ptClients->s8Reconnect > 0)
+        ptNextMac = ptClients->ptClient;
+        while (ptNextMac != NULL && (ptClients->s8Reconnect > 0 || ptClients->s8Disconect > 0))
         {
-            if (ptNextMac->eClientState == eCLIENT_RECONNECT)
+            switch (ptNextMac->eClientState)
             {
-                bzero(acBuffer, sizeof(acBuffer));
-                sniprintf(acBuffer, sizeof(acBuffer), pcFormat, ptBotInfo->acKey, ptBotInfo->s64ChatID, '%', ptNextMac->acNombre);
-                esp_http_client_set_url(tClient, acBuffer);
-                esp_http_client_perform(tClient);
-                ESP_LOGI(TAG, "Name: %s, HTTP Status = %d", ptNextMac->acNombre, esp_http_client_get_status_code(tClient));
+            case eCLIENT_RECONNECT:
+            {
+                sniprintf(acBuffer, sizeof(acBuffer), pcFormatOn, ptBotInfo->acKey, ptBotInfo->s64ChatID, '%', '%', ptNextMac->acNombre);
                 ptClients->s8Reconnect--;
+                break;
             }
+            case eCLIENT_NEW_OFFLINE:
+            {
+                sniprintf(acBuffer, sizeof(acBuffer), pcFormatOff, ptBotInfo->acKey, ptBotInfo->s64ChatID, '%', '%', ptNextMac->acNombre);
+                ptNextMac->eClientState = eCLIENT_OFFLINE;
+                ptClients->s8Disconect--;
+                break;
+            }
+            default:
+            {
+                ptNextMac = ptNextMac->ptNextClient;
+                continue;
+                break;
+            }
+            }
+
+            esp_http_client_set_url(tClient, acBuffer);
+            esp_http_client_perform(tClient);
+            ESP_LOGI(TAG, "Name: %s, HTTP Status = %d", ptNextMac->acNombre, esp_http_client_get_status_code(tClient));
             ptNextMac = ptNextMac->ptNextClient;
+            bzero(acBuffer, sizeof(acBuffer));
         }
         esp_http_client_cleanup(tClient);
     }

@@ -193,7 +193,7 @@ extern "C"
         if (tSQLConnect.connect(ptDBInfo->acHost, ptDBInfo->u16Port, ptDBInfo->acUser, ptDBInfo->acPssd, ptDBInfo->pcDB) == true)
         {
             ESP32_MySQL_Query query_mem = ESP32_MySQL_Query(&tSQLConnect);
-            ptNextClient = &ptClientList->tClient;
+            ptNextClient = ptClientList->ptClient;
 
             while (ptNextClient != NULL)
             {
@@ -202,9 +202,15 @@ extern "C"
                     return;
                 }
 
-                if (ptNextClient->eClientState != eCLIENT_OFFLINE)
+                if (ptNextClient->eClientState != eCLIENT_OFFLINE && ptNextClient->eClientState != eCLIENT_NEW_OFFLINE)
                 {
                     pcState = pcONLINE;
+                }
+
+                if (ptNextClient->eClientState == eCLIENT_ONLINE && ptNextClient->s8RSSI == 0)
+                {
+                    ptNextClient = ptNextClient->ptNextClient;
+                    continue;
                 }
 
                 snprintf(acBuff, sizeof(acBuff), pcFormatClient, pcState, ptNextClient->s8RSSI,

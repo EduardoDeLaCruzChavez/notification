@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "Directory.h"
 
-#define MAX_TIME_OFF 2
+#define MAX_TIME_OFF 1
 
 void vInsertClient(TYPE_CLIENTS *ptClients, char *pcClietMac, char *pcNombre)
 {
@@ -15,10 +15,14 @@ void vInsertClient(TYPE_CLIENTS *ptClients, char *pcClietMac, char *pcNombre)
         return;
     }
 
-    ptNext = &ptClients->tClient;
-    while (ptNext->ptNextClient != NULL)
+    ptNext = ptClients->ptClient;
+
+    if (ptNext != NULL)
     {
-        ptNext = ptNext->ptNextClient;
+        while (ptNext->ptNextClient != NULL)
+        {
+            ptNext = ptNext->ptNextClient;
+        }
     }
 
     ptNewClient = (TYPE_CLIENT_MAC *)malloc(sizeof(TYPE_CLIENT_MAC));
@@ -36,7 +40,15 @@ void vInsertClient(TYPE_CLIENTS *ptClients, char *pcClietMac, char *pcNombre)
     ptNewClient->eClientState = eCLIENT_OFFLINE;
     sniprintf(ptNewClient->acMAC, sizeof(ptNewClient->acMAC), "%s", pcClietMac);
     snprintf(ptNewClient->acNombre, sizeof(ptNewClient->acNombre), "%s", pcNombre);
-    ptNext->ptNextClient = ptNewClient;
+
+    if (ptClients->ptClient != NULL)
+    {
+        ptNext->ptNextClient = ptNewClient;
+    }
+    else
+    {
+        ptClients->ptClient = ptNewClient;
+    }
 }
 
 void vSetOffClient(TYPE_CLIENTS *ptClients)
@@ -48,7 +60,7 @@ void vSetOffClient(TYPE_CLIENTS *ptClients)
         return;
     }
 
-    ptNext = &ptClients->tClient;
+    ptNext = ptClients->ptClient;
     while (ptNext != NULL)
     {
         ptNext->s8RSSI = 0;
@@ -62,7 +74,8 @@ void vSetOffClient(TYPE_CLIENTS *ptClients)
 
             if (ptNext->s8TimeOff >= MAX_TIME_OFF)
             {
-                ptNext->eClientState = eCLIENT_OFFLINE;
+                ptClients->s8Disconect++;
+                ptNext->eClientState = eCLIENT_NEW_OFFLINE;
             }
         }
         ptNext = ptNext->ptNextClient;
@@ -79,7 +92,7 @@ int8_t s8SearchClient(TYPE_CLIENTS *ptClients, char *pcClietMac)
         return -1;
     }
 
-    ptNext = &ptClients->tClient;
+    ptNext = ptClients->ptClient;
     while (ptNext != NULL)
     {
         if (strcmp(ptNext->acMAC, pcClietMac) == 0)
@@ -173,7 +186,7 @@ void vSetOnlineClient(TYPE_CLIENTS *ptClients, int8_t s8Pos, int8_t s8RSSI)
         return;
     }
 
-    ptNexMac = &ptClients->tClient;
+    ptNexMac = ptClients->ptClient;
     while (ptNexMac != NULL)
     {
         if (s8Index == s8Pos)

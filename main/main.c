@@ -17,12 +17,18 @@ void app_main(void)
 {
 
     static TYPE_WIFI tWiFi = {0};
-    TYPE_CLIENTS tClients = {0};
+    TYPE_CLIENTS tClients = {
+        .ptClient = NULL,
+        .s8Clients = 0,
+        .s8Disconect = 0,
+        .s8Reconnect = 0,
+    };
     TYPE_RESPONSE tResponse = {0};
     TYPE_NOTIFY tNotify = {
         .ptClients = &tClients,
     };
     char acGWIP[16] = {0};
+    int8_t s8Sec = 60;
     vInitNVSFlash();
     if (i8InitFileSystem())
     {
@@ -52,16 +58,21 @@ void app_main(void)
 
     while (1)
     {
-        i8SnmpGetNext(acGWIP, "public", "1.3.4.13.69.101", &tResponse);
-        vReadResponse(&tResponse);
-
-        vUpdateClient(&tClients, &tResponse);
-        vFreeResponse(&tResponse);
-        vUpdateStateClient(&tDBInfo, &tClients);
-        if (tClients.s8Reconnect > 0)
+        if (s8Sec >= 60)
         {
-            vTaskResume(tNotify.tHandle);
+            i8SnmpGetNext(acGWIP, "public", "1.3.4.13.69.101", &tResponse);
+            vReadResponse(&tResponse);
+
+            vUpdateClient(&tClients, &tResponse);
+            vFreeResponse(&tResponse);
+            vUpdateStateClient(&tDBInfo, &tClients);
+            if (tClients.s8Reconnect > 0 || tClients.s8Disconect > 0)
+            {
+                vTaskResume(tNotify.tHandle);
+            }
+            s8Sec = 0;
         }
-        vTaskDelay(60000 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        s8Sec++;
     }
 }

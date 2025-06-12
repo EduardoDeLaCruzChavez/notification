@@ -10,6 +10,7 @@ typedef enum
     eCLIENT_UNDEF,
     eCLIENT_ONLINE,
     eCLIENT_OFFLINE,
+    eCLIENT_NEW_OFFLINE,
     eCLIENT_RECONNECT,
     eCLIENT_MAX
 } ENUM_CLIENT_STATE;
@@ -26,9 +27,10 @@ typedef struct TYPE_CLIENT_MAC
 
 typedef struct TYPE_CLIENTS
 {
+    int8_t s8Disconect;
     int8_t s8Reconnect;
     int8_t s8Clients;
-    TYPE_CLIENT_MAC tClient;
+    TYPE_CLIENT_MAC *ptClient;
 } TYPE_CLIENTS;
 
 typedef struct TYPE_BOT_INFO
