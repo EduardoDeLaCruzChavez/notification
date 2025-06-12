@@ -2,6 +2,7 @@
 #include "HTTPServer.h"
 #include "Directory.h"
 #include "FileSystem.h"
+#include "OutIn.h"
 #include <ctype.h>
 
 static const char *TAG_HTTP = "HTTP Server";
@@ -328,5 +329,13 @@ int8_t i8StartServer(void)
     httpd_register_uri_handler(tServer, &tConfigPost);
     httpd_register_uri_handler(tServer, &tConfigGet);
     httpd_register_err_handler(tServer, HTTPD_404_NOT_FOUND, tError404Handler);
+    bool bState = false;
+    while (1)
+    {
+        bState = !bState;
+        vWriteLed(bState);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+
     return -1; // Exit success
 }

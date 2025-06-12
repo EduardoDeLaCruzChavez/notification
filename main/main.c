@@ -10,8 +10,12 @@
 #include "Directory.h"
 #include "MySQL.h"
 #include "HTTPSGet.h"
+#include "OutIn.h"
+
+#define SLEEP_MS 200
 
 char DATABASE[] = "mydb";
+void vResetFactory();
 
 void app_main(void)
 {
@@ -28,8 +32,10 @@ void app_main(void)
         .ptClients = &tClients,
     };
     char acGWIP[16] = {0};
-    int8_t s8Sec = 60;
+    int32_t u32Mls = 60000;
     vInitNVSFlash();
+    vInitGPIO();
+
     if (i8InitFileSystem())
     {
         vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -55,10 +61,13 @@ void app_main(void)
     vReadClients(&tDBInfo, &tClients);
     vInitHTTPClient(&tNotify);
     vGetApIp(acGWIP);
+    vWriteLed(true);
 
     while (1)
     {
-        if (s8Sec >= 60)
+        vResetFactory();
+
+        if (u32Mls >= 60 * 1000)
         {
             i8SnmpGetNext(acGWIP, "public", "1.3.4.13.69.101", &tResponse);
             vReadResponse(&tResponse);
@@ -70,9 +79,31 @@ void app_main(void)
             {
                 vTaskResume(tNotify.tHandle);
             }
-            s8Sec = 0;
+            u32Mls = 0;
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        s8Sec++;
+        vTaskDelay(SLEEP_MS / portTICK_PERIOD_MS);
+        u32Mls += SLEEP_MS;
+    }
+}
+
+void vResetFactory()
+{
+    static int16_t s16Time = 10000;
+    bool bReset = false;
+
+    if (bReadPin(PIN_RESET) == 1)
+    {
+        s16Time -= SLEEP_MS;
+        if (s16Time <= 0)
+        {
+            vSetBlock(KEY_CONNECT, &bReset, sizeof(bReset));
+            vSetBlock(KEY_CFG, &bReset, sizeof(bReset));
+            esp_restart();
+        }
+    }
+
+    if (bReadPin(PIN_RESET) == 0)
+    {
+        s16Time = 10000;
     }
 }

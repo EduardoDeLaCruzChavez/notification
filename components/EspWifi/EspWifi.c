@@ -87,6 +87,8 @@ void vInitWiFi(TYPE_WIFI *ptWiFi)
     wifi_config_t tApInfo = {0};
     EventBits_t tBits = 0;
     bool bConfig = false;
+    bool bConnect = false;
+
     if (ptWiFi == NULL)
     {
         return;
@@ -134,6 +136,8 @@ void vInitWiFi(TYPE_WIFI *ptWiFi)
     }
     else if (tBits & WIFI_CONNECTED_BIT)
     {
+        bConnect = true;
+        vSetBlock(KEY_CONNECT, &bConnect, sizeof(bConnect));
         ptWiFi->tState = eWIFI_STA;
         ESP_LOGI(TAG_STA, "Connected to SSID: %s", tApInfo.sta.ssid);
     }
@@ -141,9 +145,13 @@ void vInitWiFi(TYPE_WIFI *ptWiFi)
     {
         ESP_LOGI(TAG_STA, "Failed to connect to SSID:%s, password:%s",
                  tApInfo.sta.ssid, tApInfo.sta.password);
-        bConfig = false;
-        vSetBlock(KEY_CFG, &bConfig, sizeof(bConfig));
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vGetBlock(KEY_CONNECT, &bConnect, sizeof(bConnect));
+
+        if (bConnect == false)
+        {
+            bConfig = false;
+            vSetBlock(KEY_CFG, &bConfig, sizeof(bConfig));
+        }
         esp_restart();
     }
     else

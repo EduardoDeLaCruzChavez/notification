@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "Directory.h"
 
-#define MAX_TIME_OFF 1
+#define MAX_TIME_OFF 2
 
 void vInsertClient(TYPE_CLIENTS *ptClients, char *pcClietMac, char *pcNombre)
 {
@@ -35,7 +35,7 @@ void vInsertClient(TYPE_CLIENTS *ptClients, char *pcClietMac, char *pcNombre)
 
     ptClients->s8Clients++;
     ptNewClient->ptNextClient = NULL;
-    ptNewClient->s8TimeOff = 5;
+    ptNewClient->s8TimeOff = MAX_TIME_OFF;
     ptNewClient->s8RSSI = 0;
     ptNewClient->eClientState = eCLIENT_OFFLINE;
     sniprintf(ptNewClient->acMAC, sizeof(ptNewClient->acMAC), "%s", pcClietMac);

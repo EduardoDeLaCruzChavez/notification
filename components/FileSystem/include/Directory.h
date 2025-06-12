@@ -8,6 +8,7 @@
 #define KEY_CFG "K_CFG"
 #define KEY_NAME "K_NAME"
 #define KEY_MODE "K_MODE"
+#define KEY_CONNECT "K_CONNECT"
 
 #define BACKEND_DIR "/backend"
 #define ROOT_HTML_FILE ROOT_DIR BACKEND_DIR "/index.html"
