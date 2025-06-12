@@ -167,31 +167,19 @@
         <form action="/Config" method="post">
             <div class="form-group">
                 <label for="SSID">SSID:</label>
-                <input type="text" id="SSID" name="SSID" required>
+                <input type="text" id="SSID" name="SSID" maxlength="31" placeholder="Máximo 31 caracteres" required>
             </div>
 
             <div class="form-group">
                 <label for="PSSD">Password:</label>
-                <input type="password" id="PSSD" name="PSSD" required>
-                <button type="button" class="password-toggle" onclick="togglePassword()">Mostrar</button>
+                <input type="password" id="PSSD" name="PSSD" maxlength="63" placeholder="Máximo 63 caracteres" required>
+                <button type=" button" class="password-toggle" "
+                    onclick=" togglePassword()">Mostrar</button>
             </div>
 
             <div class="form-group">
                 <label for="name">Nombre del dispositivo:</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div class="form-group">
-                <h2>Seleccione modo de operacion:</h2>
-                <div class="options-container">
-                    <div class="option">
-                        <input type="radio" id="server" name="mode" value="server" checked>
-                        <label for="server">Server</label>
-                    </div>
-                    <div class="option">
-                        <input type="radio" id="client" name="mode" value="client">
-                        <label for="client">Client</label>
-                    </div>
-                </div>
+                <input type="text" id="name" name="name" maxlength="15" placeholder="Máximo 15 caracteres" required>
             </div>
             <button type="submit" class="submit-btn">Enviar</button>
         </form>

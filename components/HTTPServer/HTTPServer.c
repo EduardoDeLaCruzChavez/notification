@@ -148,7 +148,8 @@ static esp_err_t tConfigPostHandler(httpd_req_t *ptReq)
 {
     char acBuffer[256] = {0};
     char acSSID[32] = {0}, acPSSD[64] = {0};
-    char acHostName[16] = {0}, acMode[8] = {0};
+    char acHostName[16] = {0};
+    //, acMode[8] = {0};
     int iReceived = 0;
     int iRemaining = ptReq->content_len;
     uint8_t u8Keys = 0;
@@ -186,16 +187,16 @@ static esp_err_t tConfigPostHandler(httpd_req_t *ptReq)
         url_decode(acHostName);
         u8Keys |= (1 << 2);
     }
-    if (httpd_query_key_value(acBuffer, "mode", acMode, sizeof(acMode)) == ESP_OK)
+    /*if (httpd_query_key_value(acBuffer, "mode", acMode, sizeof(acMode)) == ESP_OK)
     {
         url_decode(acMode);
         u8Keys |= (1 << 3);
-    }
+    }*/
 
     vSetKey(KEY_SSID, acSSID);
     vSetKey(KEY_PSSD, acPSSD);
     vSetKey(KEY_NAME, acHostName);
-    vSetKey(KEY_MODE, acMode);
+    // vSetKey(KEY_MODE, acMode);
 
     httpd_register_uri_handler(tServer, &tFinalGet);
     tRedirectHandler(ptReq, "/Final");
