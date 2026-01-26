@@ -184,7 +184,7 @@ static void http_test_task(void *pvParameters)
 
     while (1)
     {
-        vTaskSuspend(NULL);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         tClient = esp_http_client_init(&tConfig);
         ptNextMac = ptClients->ptClient;
