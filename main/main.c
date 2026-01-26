@@ -77,7 +77,7 @@ void app_main(void)
             vUpdateStateClient(&tDBInfo, &tClients);
             if (tClients.s8Reconnect > 0 || tClients.s8Disconect > 0)
             {
-                vTaskResume(tNotify.tHandle);
+                xTaskNotifyGive(tNotify.tHandle);
             }
             u32Mls = 0;
         }
