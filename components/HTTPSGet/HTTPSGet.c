@@ -190,11 +190,13 @@ static void http_test_task(void *pvParameters)
         ptNextMac = ptClients->ptClient;
         while (ptNextMac != NULL && (ptClients->s8Reconnect > 0 || ptClients->s8Disconect > 0))
         {
+
             switch (ptNextMac->eClientState)
             {
             case eCLIENT_RECONNECT:
             {
                 sniprintf(acBuffer, sizeof(acBuffer), pcFormatOn, ptBotInfo->acKey, ptBotInfo->s64ChatID, '%', '%', ptNextMac->acNombre);
+                ptNextMac->eClientState = eCLIENT_ONLINE;
                 ptClients->s8Reconnect--;
                 break;
             }

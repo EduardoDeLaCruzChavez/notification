@@ -69,7 +69,7 @@ void app_main(void)
 
         if (u32Mls >= 60 * 1000)
         {
-            i8SnmpGetNext(acGWIP, "public", "1.3.4.13.69.101", &tResponse);
+            i8SnmpGetNext(acGWIP, "public", "1.3.4.14.69.101", &tResponse);
             vReadResponse(&tResponse);
 
             vUpdateClient(&tClients, &tResponse);
