@@ -41,11 +41,11 @@ extern "C"
                 // Execute the query
                 if (!query_mem.execute(query))
                 {
-                    ESP_LOGI("MYSQL", "Error en conexion");
+                    ESP_LOGD("MYSQL", "Error en conexion");
                 }
                 else
                 {
-                    ESP_LOGI("MYSQL", "Data Inserted.");
+                    ESP_LOGD("MYSQL", "Data Inserted.");
                 }
             }
             tSQLConnect.close(); // close the connection
@@ -227,7 +227,7 @@ extern "C"
 
                 snprintf(acBuff, sizeof(acBuff), pcFormatClient, pcState, ptNextClient->s8RSSI,
                          ptNextClient->acMAC);
-                printf("%s\n", acBuff);
+                ESP_LOGD("MYSQL", "%s", acBuff);
                 query_mem.execute(acBuff);
                 ptNextClient = ptNextClient->ptNextClient;
             }

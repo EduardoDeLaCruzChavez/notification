@@ -2,8 +2,8 @@
 #include "FileSystem.h"
 #include "Directory.h"
 
-const char *TAG = "File System";
-const char *TAG_NVS = "NVS";
+static const char *TAG = "File System";
+static const char *TAG_NVS = "NVS";
 
 int8_t i8InitFileSystem(void)
 {
@@ -37,7 +37,7 @@ int8_t i8InitFileSystem(void)
         return -1;
     }
 
-    ESP_LOGI(TAG, "Performing SPIFFS_check().");
+    ESP_LOGD(TAG, "Performing SPIFFS_check().");
     tRet = esp_spiffs_check(conf.partition_label);
 
     if (tRet != ESP_OK)
@@ -46,7 +46,7 @@ int8_t i8InitFileSystem(void)
         return -1;
     }
 
-    ESP_LOGI(TAG, "SPIFFS_check() successful");
+    ESP_LOGD(TAG, "SPIFFS_check() successful");
 
     tRet = esp_spiffs_info(conf.partition_label, &tTotal, &tUsed);
     if (tRet != ESP_OK)
@@ -55,7 +55,7 @@ int8_t i8InitFileSystem(void)
         esp_spiffs_format(conf.partition_label);
         return -1;
     }
-    ESP_LOGI(TAG, "Partition size: Total: %d, Used: %d", tTotal, tUsed);
+    ESP_LOGD(TAG, "Partition size: Total: %d, Used: %d", tTotal, tUsed);
 
     // Check consistency of reported partition size info.
     if (tUsed > tTotal)
@@ -113,7 +113,7 @@ void vClearKey(char *pcKey)
         ESP_LOGE(TAG_NVS, "Failed to write string!");
     }
 
-    ESP_LOGI(TAG_NVS, "Committing updates in NVS...");
+    ESP_LOGD(TAG_NVS, "Committing updates in NVS...");
     tError = nvs_commit(tHandle);
 
     if (tError != ESP_OK)
@@ -123,7 +123,7 @@ void vClearKey(char *pcKey)
 
     // Close
     nvs_close(tHandle);
-    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+    ESP_LOGD(TAG_NVS, "NVS handle closed.");
 }
 
 void vSetKey(char *pckey, char *pcValue)
@@ -150,7 +150,7 @@ void vSetKey(char *pckey, char *pcValue)
         ESP_LOGE(TAG_NVS, "Failed to write string!");
     }
 
-    ESP_LOGI(TAG_NVS, "Committing updates in NVS...");
+    ESP_LOGD(TAG_NVS, "Committing updates in NVS...");
     tError = nvs_commit(tHandle);
 
     if (tError != ESP_OK)
@@ -160,7 +160,7 @@ void vSetKey(char *pckey, char *pcValue)
 
     // Close
     nvs_close(tHandle);
-    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+    ESP_LOGD(TAG_NVS, "NVS handle closed.");
 }
 
 void vGetKey(char *pckey, char *pcValue, int iSize)
@@ -182,7 +182,7 @@ void vGetKey(char *pckey, char *pcValue, int iSize)
         return;
     }
 
-    ESP_LOGI(TAG_NVS, "Reading string from NVS...");
+    ESP_LOGD(TAG_NVS, "Reading string from NVS...");
     tErro = nvs_get_str(tHandle, pckey, NULL, &tRequiredSize);
 
     if (tErro == ESP_OK && tRequiredSize < iSize)
@@ -190,13 +190,13 @@ void vGetKey(char *pckey, char *pcValue, int iSize)
         tErro = nvs_get_str(tHandle, pckey, pcValue, &tRequiredSize);
         if (tErro == ESP_OK)
         {
-            ESP_LOGI(TAG_NVS, "Read string: %s", pcValue);
+            ESP_LOGD(TAG_NVS, "Read string: %s", pcValue);
         }
     }
 
     // Close
     nvs_close(tHandle);
-    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+    ESP_LOGD(TAG_NVS, "NVS handle closed.");
 }
 
 void vGetBlock(char *pckey, void *pvBuff, int iSize)
@@ -218,7 +218,7 @@ void vGetBlock(char *pckey, void *pvBuff, int iSize)
         return;
     }
 
-    ESP_LOGI(TAG_NVS, "Reading string from NVS...");
+    ESP_LOGD(TAG_NVS, "Reading string from NVS...");
     tErro = nvs_get_blob(tHandle, pckey, NULL, &tRequiredSize);
 
     if (tErro == ESP_OK && tRequiredSize == iSize)
@@ -228,7 +228,7 @@ void vGetBlock(char *pckey, void *pvBuff, int iSize)
 
     // Close
     nvs_close(tHandle);
-    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+    ESP_LOGD(TAG_NVS, "NVS handle closed.");
 }
 
 void vSetBlock(char *pckey, void *pvBuff, int iSize)
@@ -255,7 +255,7 @@ void vSetBlock(char *pckey, void *pvBuff, int iSize)
         ESP_LOGE(TAG_NVS, "Failed to write string!");
     }
 
-    ESP_LOGI(TAG_NVS, "Committing updates in NVS...");
+    ESP_LOGD(TAG_NVS, "Committing updates in NVS...");
     tError = nvs_commit(tHandle);
 
     if (tError != ESP_OK)
@@ -265,7 +265,7 @@ void vSetBlock(char *pckey, void *pvBuff, int iSize)
 
     // Close
     nvs_close(tHandle);
-    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+    ESP_LOGD(TAG_NVS, "NVS handle closed.");
 }
 
 void vClearAllNVS()
@@ -298,7 +298,7 @@ void vClearAllNVS()
         ESP_LOGE(TAG_NVS, "Failed to clear nvs");
     }
 
-    ESP_LOGI(TAG_NVS, "Committing updates in NVS...");
+    ESP_LOGD(TAG_NVS, "Committing updates in NVS...");
     tError = nvs_commit(tHandle);
 
     if (tError != ESP_OK)
@@ -307,5 +307,5 @@ void vClearAllNVS()
     }
 
     nvs_close(tHandle);
-    ESP_LOGI(TAG_NVS, "NVS handle closed.");
+    ESP_LOGD(TAG_NVS, "NVS handle closed.");
 }
