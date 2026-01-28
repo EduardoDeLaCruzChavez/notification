@@ -39,7 +39,7 @@ typedef struct TYPE_BOT_INFO
     int64_t s64ChatID;
 } TYPE_BOT_INFO;
 
-void vInsertClient(TYPE_CLIENTS *ptClients, char *pcClietMac, char *pcNombre);
+void vInsertClient(TYPE_CLIENTS *ptClients, char *pcClietMac, char *pcNombre, bool bState);
 void vSetOffClient(TYPE_CLIENTS *ptClients);
 int8_t s8SearchClient(TYPE_CLIENTS *ptClients, char *pcClietMac);
 int8_t bReadMacClient(FILE *pFile, void *pvBuffer, int8_t s8Size);

@@ -119,6 +119,8 @@ extern "C"
         const char *pFORMAT_VIEW_MAC = "SELECT * FROM VIEM_MAC_CLIENT";
         char acMac[13];
         char acNombre[16];
+        bool bState;
+
         if (tSQLConnect.connect(ptDBInfo->acHost, ptDBInfo->u16Port, ptDBInfo->acUser, ptDBInfo->acPssd, ptDBInfo->pcDB) == false)
         {
             return;
@@ -154,21 +156,26 @@ extern "C"
             {
                 bzero(acMac, sizeof(acMac));
                 bzero(acNombre, sizeof(acNombre));
-
+                bState = false;
                 for (int f = 0; f < cols->num_fields; f++)
                 {
-                    printf("%s ", row->values[f]);
-                    if (f == 0)
+                    switch (f)
                     {
+                    case 0:
                         snprintf(acMac, sizeof(acMac), "%s", row->values[f]);
-                    }
-                    else if (f == 1)
-                    {
+                        break;
+                    case 1:
                         snprintf(acNombre, sizeof(acNombre), "%s", row->values[f]);
+                        break;
+                    case 2:
+                        bState = strcmp("Conectado", row->values[f]) == 0 ? true: false;
+                        break;
+                    default:
+                        break;
                     }
                 }
-                vInsertClient(ptClients, acMac, acNombre);
-                printf("\n");
+                vInsertClient(ptClients, acMac, acNombre, bState);
+                //printf("\n");
             }
         } while (row != NULL);
         tSQLConnect.close(); // close the connection
@@ -202,15 +209,20 @@ extern "C"
                     return;
                 }
 
-                if (ptNextClient->eClientState != eCLIENT_OFFLINE && ptNextClient->eClientState != eCLIENT_NEW_OFFLINE)
+                switch (ptNextClient->eClientState)
                 {
-                    pcState = pcONLINE;
-                }
+                    case eCLIENT_ONLINE:
+                        pcState = pcONLINE;
+                        break;
 
-                if (ptNextClient->eClientState == eCLIENT_ONLINE && ptNextClient->s8RSSI == 0)
-                {
-                    ptNextClient = ptNextClient->ptNextClient;
-                    continue;
+                    case eCLIENT_OFFLINE:
+                    case eCLIENT_NEW_OFFLINE:
+                        pcState = pcOFFLINE;
+                        break;
+                    
+                
+                   default:
+                        break;
                 }
 
                 snprintf(acBuff, sizeof(acBuff), pcFormatClient, pcState, ptNextClient->s8RSSI,
@@ -218,7 +230,6 @@ extern "C"
                 ESP_LOGD("MYSQL", "%s", acBuff);
                 query_mem.execute(acBuff);
                 ptNextClient = ptNextClient->ptNextClient;
-                pcState = pcOFFLINE;
             }
             tSQLConnect.close(); // close the connection
         }
