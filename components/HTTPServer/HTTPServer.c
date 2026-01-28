@@ -171,7 +171,7 @@ static esp_err_t tConfigPostHandler(httpd_req_t *ptReq)
     }
     acBuffer[ptReq->content_len] = 0;
 
-    ESP_LOGI(TAG_HTTP, "Found URL query => %s", acBuffer);
+    ESP_LOGD(TAG_HTTP, "Found URL query => %s", acBuffer);
     if (httpd_query_key_value(acBuffer, "SSID", acSSID, sizeof(acSSID)) == ESP_OK)
     {
         url_decode(acSSID);
@@ -321,7 +321,7 @@ int8_t i8StartServer(void)
 
     if (ESP_OK != tRet)
     {
-        ESP_LOGI(TAG_HTTP, "Error starting server!");
+        ESP_LOGE(TAG_HTTP, "Error starting server!");
         esp_restart();
     }
 

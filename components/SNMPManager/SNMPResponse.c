@@ -52,7 +52,7 @@ void vReadResponse(TYPE_RESPONSE *ptRespose)
             ptSTR = ptResNext->ptResponse;
             // printf("STR %p\n", ptSTR);
             // printf("RES %p\n", ptResNext);
-            ESP_LOGI("MAC", "%s", ptSTR->acBuffer);
+            ESP_LOGD("MAC", "%s", ptSTR->acBuffer);
             break;
         }
         default:

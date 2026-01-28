@@ -34,7 +34,7 @@ static void vInitWiFiAP(void)
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &tConfigAP));
-    ESP_LOGI(TAG_AP, "SSID: %s, Password: %s", ESP_WIFI_AP_SSID, ESP_WIFI_AP_PASSD);
+    ESP_LOGD(TAG_AP, "SSID: %s, Password: %s", ESP_WIFI_AP_SSID, ESP_WIFI_AP_PASSD);
     return;
 }
 
@@ -65,7 +65,7 @@ static void vInitWiFiSta(TYPE_WIFI *ptWiFi)
     esp_netif_set_hostname(tNetfit, acHostName);
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &tConfigSta));
-    ESP_LOGI(TAG_STA, "vInitWiFiSta finished.");
+    ESP_LOGD(TAG_STA, "vInitWiFiSta finished.");
     return;
 }
 
@@ -143,7 +143,7 @@ void vInitWiFi(TYPE_WIFI *ptWiFi)
     }
     else if (tBits & WIFI_FAIL_BIT)
     {
-        ESP_LOGI(TAG_STA, "Failed to connect to SSID:%s, password:%s",
+        ESP_LOGW(TAG_STA, "Failed to connect to SSID:%s, password:%s",
                  tApInfo.sta.ssid, tApInfo.sta.password);
         vGetBlock(KEY_CONNECT, &bConnect, sizeof(bConnect));
 
@@ -156,7 +156,7 @@ void vInitWiFi(TYPE_WIFI *ptWiFi)
     }
     else
     {
-        ESP_LOGE(TAG_STA, "UNEXPECTED EVENT");
+        ESP_LOGD(TAG_STA, "UNEXPECTED EVENT");
         return;
     }
 }
@@ -193,19 +193,19 @@ static void WiFiEventHandler(void *vpArg, esp_event_base_t tEventBase,
     else if (tEventBase == WIFI_EVENT && i32EventID == WIFI_EVENT_AP_STACONNECTED)
     {
         wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *)vpEventData;
-        ESP_LOGI(TAG_AP, "Station " MACSTR " joined, AID=%d",
+        ESP_LOGD(TAG_AP, "Station " MACSTR " joined, AID=%d",
                  MAC2STR(event->mac), event->aid);
     }
     else if (tEventBase == WIFI_EVENT && i32EventID == WIFI_EVENT_AP_STADISCONNECTED)
     {
         wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *)vpEventData;
-        ESP_LOGI(TAG_AP, "Station " MACSTR " left, AID=%d, reason:%d",
+        ESP_LOGD(TAG_AP, "Station " MACSTR " left, AID=%d, reason:%d",
                  MAC2STR(event->mac), event->aid, event->reason);
     }
     else if (tEventBase == WIFI_EVENT && i32EventID == WIFI_EVENT_STA_START)
     {
         esp_wifi_connect();
-        ESP_LOGI(TAG_STA, "Station started");
+        ESP_LOGD(TAG_STA, "Station started");
     }
     else if (tEventBase == IP_EVENT && i32EventID == IP_EVENT_STA_GOT_IP)
     {
@@ -213,13 +213,13 @@ static void WiFiEventHandler(void *vpArg, esp_event_base_t tEventBase,
     }
     else if (tEventBase == WIFI_EVENT && i32EventID == WIFI_EVENT_STA_DISCONNECTED)
     {
-        ESP_LOGI(TAG_STA, "Connect to the AP fail");
+        ESP_LOGE(TAG_STA, "Connect to the AP fail");
 
         if (ptWiFi->u8NumRetyr < ESP_WIFI_STA_RETRYS)
         {
             esp_wifi_connect();
             ptWiFi->u8NumRetyr++;
-            ESP_LOGI(TAG_STA, "Retry to connect to the AP");
+            ESP_LOGW(TAG_STA, "Retry to connect to the AP");
         }
         else
         {

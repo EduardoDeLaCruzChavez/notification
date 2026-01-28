@@ -4,6 +4,7 @@
 #include "Directory.h"
 
 #define MAX_TIME_OFF 2
+static const char *TAG = "Monitor";
 
 void vInsertClient(TYPE_CLIENTS *ptClients, char *pcClietMac, char *pcNombre)
 {
@@ -29,7 +30,7 @@ void vInsertClient(TYPE_CLIENTS *ptClients, char *pcClietMac, char *pcNombre)
 
     if (ptNewClient == NULL)
     {
-        ESP_LOGE("", "Error al insertar nuevo cliente");
+        ESP_LOGE(TAG, "Error al insertar nuevo cliente");
         return;
     }
 
@@ -74,6 +75,7 @@ void vSetOffClient(TYPE_CLIENTS *ptClients)
 
             if (ptNext->s8TimeOff >= MAX_TIME_OFF)
             {
+                ESP_LOGI(TAG, "Offline %s", ptNext->acNombre);
                 ptClients->s8Disconect++;
                 ptNext->eClientState = eCLIENT_NEW_OFFLINE;
             }
@@ -163,7 +165,7 @@ void vGetClientList(TYPE_CLIENTS *ptClients)
 
     while (bReadMacClient(pFile, acMACBuff, sizeof(acMACBuff)))
     {
-        ESP_LOG_BUFFER_HEX("MAC", acMACBuff, sizeof(acMACBuff));
+        ESP_LOG_BUFFER_HEX(TAG, acMACBuff, sizeof(acMACBuff));
         vInsertClient(ptClients, acMACBuff, NULL);
         ptClients->s8Clients++;
     }
@@ -201,11 +203,11 @@ void vSetOnlineClient(TYPE_CLIENTS *ptClients, int8_t s8Pos, int8_t s8RSSI)
     ptNexMac->s8RSSI = s8RSSI;
     if (ptNexMac->s8TimeOff >= MAX_TIME_OFF)
     {
-        ESP_LOGI("Cliente", "Cliente reconectado");
+        ESP_LOGI(TAG, "Cliente reconectado");
         ptNexMac->eClientState = eCLIENT_RECONNECT;
         ptClients->s8Reconnect++;
     }
-    ESP_LOGI("Cliente", "%s", ptNexMac->acNombre);
+    ESP_LOGI(TAG, "%s %d", ptNexMac->acNombre, (int)ptNexMac->eClientState);
     ptNexMac->s8TimeOff = 0;
 }
 

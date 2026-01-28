@@ -3,7 +3,7 @@
 #include "SNMPBasic.h"
 #include "SNMPResponse.h"
 
-const char *TAG_SNMP = "SNMP Manager";
+static const char *TAG_SNMP = "SNMP Manager";
 
 static int8_t i8SnmpQueryChar(TYPE_SNMP_QUERY *ptSNMPQuery, const char *pcType, const char *pcODI, ENUM_QUERY_SNMP tQueryType);
 static uint8_t u8SnmpHeader(TYPE_SNMP_QUERY *ptSNMPQuery, const char *pcType, ENUM_QUERY_SNMP tQueryType);
@@ -37,7 +37,7 @@ void vInitSNMP(char *pcIPHost, TYPE_SNMP_SESION *ptSesion)
 
     setsockopt(ptSesion->iSocket, SOL_SOCKET, SO_RCVTIMEO, &tTimeOut, sizeof(tTimeOut));
 
-    ESP_LOGI(TAG_SNMP, "Socket created, sending to %s:%d", pcIPHost, PORT);
+    ESP_LOGD(TAG_SNMP, "Socket created, sending to %s:%d", pcIPHost, PORT);
 }
 
 void vDeInitSNMP(TYPE_SNMP_SESION *ptSesion)
@@ -102,7 +102,7 @@ int iRecvQuery(TYPE_SNMP_SESION *ptSesion, TYPE_SNMP_QUERY *ptQueryRecv)
 
     if (iLen > 0)
     {
-        ESP_LOGI(TAG_SNMP, "Received %d bytes", iLen);
+        ESP_LOGD(TAG_SNMP, "Received %d bytes", iLen);
         // vPrintQuery(ptQueryRecv);
     }
 
@@ -220,7 +220,7 @@ int8_t i8ReadResponse(TYPE_SNMP_QUERY *ptSNMPRes, TYPE_RESPONSE_QUERY *ptQueryRe
                 return eState;
             }
             i8GetString(ptSNMPRes, acBuffer, sizeof(acBuffer));
-            // ESP_LOGI(TAG_SNMP, "Comunity: %s", acBuffer);
+            // ESP_LOGV(TAG_SNMP, "Comunity: %s", acBuffer);
             break;
         }
         case eSNMP_TYPE_PDU:
@@ -239,7 +239,7 @@ int8_t i8ReadResponse(TYPE_SNMP_QUERY *ptSNMPRes, TYPE_RESPONSE_QUERY *ptQueryRe
                 return eState;
             }
             u32Buffer = u32GetInteger(ptSNMPRes);
-            // ESP_LOGI(TAG_SNMP, "Request ID: %" PRIu32 "", u32Buffer);
+            // ESP_LOGV(TAG_SNMP, "Request ID: %" PRIu32 "", u32Buffer);
             break;
         }
         case eSNMP_ERROR_:
@@ -249,7 +249,7 @@ int8_t i8ReadResponse(TYPE_SNMP_QUERY *ptSNMPRes, TYPE_RESPONSE_QUERY *ptQueryRe
                 return eState;
             }
             u32Buffer = u32GetInteger(ptSNMPRes);
-            // ESP_LOGI(TAG_SNMP, "Error: %" PRIu32 "", u32Buffer);
+            // ESP_LOGV(TAG_SNMP, "Error: %" PRIu32 "", u32Buffer);
             break;
         }
         case eSNMP_ERROR_INDEX:
@@ -261,7 +261,7 @@ int8_t i8ReadResponse(TYPE_SNMP_QUERY *ptSNMPRes, TYPE_RESPONSE_QUERY *ptQueryRe
             u32Buffer = u32GetInteger(ptSNMPRes);
             if (u32Buffer != 0)
             {
-                // ESP_LOGI(TAG_SNMP, "Error Index: %" PRIu32 "", u32Buffer);
+                // ESP_LOGV(TAG_SNMP, "Error Index: %" PRIu32 "", u32Buffer);
                 return -1;
             }
             break;
@@ -351,7 +351,7 @@ int8_t i8SnmpGetNext(char *pcIPHost, const char *pcType, const char *pcODI, TYPE
         u8Error = i8ReadResponse(&tQueryRecv, &tQueryRes);
         if (u8Error != 0)
         {
-            ESP_LOGI(TAG_SNMP, "Error %d", (int)u8Error);
+            ESP_LOGD(TAG_SNMP, "Error %d", (int)u8Error);
             break;
         }
 
