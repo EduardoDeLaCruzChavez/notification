@@ -60,10 +60,10 @@ bool ESP32_MySQL_Connection::connect(const char *hostname, const uint16_t port, 
   int retries = 0;
   bool returnVal = false;
 
-  ESP_LOGI("MySQL", "Connecting to Server: %s, Port = %d", hostname, port);
+  ESP_LOGD("MySQL", "Connecting to Server: %s, Port = %d", hostname, port);
 
   if (db)
-    ESP_LOGI("MySQL", "Using Database: %s", db);
+    ESP_LOGD("MySQL", "Using Database: %s", db);
 
   // Retry up to MAX_CONNECT_ATTEMPTS times.
   while (retries++ < MAX_CONNECT_ATTEMPTS)
@@ -86,7 +86,7 @@ bool ESP32_MySQL_Connection::connect(const char *hostname, const uint16_t port, 
   if (connected != SUCCESS)
     return false;
 
-  ESP_LOGI("MySQL", "Connect OK. Try reading packets");
+  ESP_LOGD("MySQL", "Connect OK. Try reading packets");
 
   if (!read_packet())
   {
@@ -94,11 +94,11 @@ bool ESP32_MySQL_Connection::connect(const char *hostname, const uint16_t port, 
     return false;
   }
 
-  ESP_LOGI("MySQL", "Try parsing packets");
+  ESP_LOGD("MySQL", "Try parsing packets");
 
   parse_handshake_packet();
 
-  ESP_LOGI("MySQL", "Try send_authentication packets");
+  ESP_LOGD("MySQL", "Try send_authentication packets");
 
   send_authentication_packet(user, password, db);
 
@@ -112,7 +112,7 @@ bool ESP32_MySQL_Connection::connect(const char *hostname, const uint16_t port, 
   }
   else
   {
-    ESP_LOGW("MySQL", "Connected. Server Version = %s", server_version);
+    ESP_LOGV("MySQL", "Connected. Server Version = %s", server_version);
     returnVal = true;
   }
 
@@ -134,10 +134,10 @@ Connection_Result ESP32_MySQL_Connection::connectNonBlocking(const char *hostnam
   Connection_Result returnVal = RESULT_FAIL;
   TickType_t now = 0;
 
-  ESP_LOGI("MySQL", "Connecting to Server: %s, Port = %d", hostname, port);
+  ESP_LOGD("MySQL", "Connecting to Server: %s, Port = %d", hostname, port);
 
   if (db)
-    ESP_LOGI("MySQL", "Using Database: %s", db);
+    ESP_LOGD("MySQL", "Using Database: %s", db);
 
   while (retries < MAX_CONNECT_ATTEMPTS)
   {
@@ -167,7 +167,7 @@ Connection_Result ESP32_MySQL_Connection::connectNonBlocking(const char *hostnam
   if (connected != SUCCESS)
     return RESULT_FAIL;
 
-  ESP_LOGI("MySQL", "Connect OK. Try reading packets");
+  ESP_LOGD("MySQL", "Connect OK. Try reading packets");
 
   if (!read_packet())
   {
@@ -175,11 +175,11 @@ Connection_Result ESP32_MySQL_Connection::connectNonBlocking(const char *hostnam
     return RESULT_FAIL;
   }
 
-  ESP_LOGI("MySQL", "Try parsing packets");
+  ESP_LOGD("MySQL", "Try parsing packets");
 
   parse_handshake_packet();
 
-  ESP_LOGI("MySQL", "Try send_authentication packets");
+  ESP_LOGD("MySQL", "Try send_authentication packets");
 
   send_authentication_packet(user, password, db);
 
@@ -193,7 +193,7 @@ Connection_Result ESP32_MySQL_Connection::connectNonBlocking(const char *hostnam
   }
   else
   {
-    ESP_LOGW("MySQL", "Connected. Server Version = %s", server_version);
+    ESP_LOGV("MySQL", "Connected. Server Version = %s", server_version);
     returnVal = RESULT_OK;
   }
 
